@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { UserModel } from '../models/user.model.js';
+import { createHash, isValidPassword } from '../utils.js';
 
 const app = Router();
 
@@ -16,7 +17,7 @@ app.post('/register', async (req, res) => {
       apellido,
       email,
       edad,
-      password,
+      password: createHash(password),
     });
     res.status(201).json({ message: 'usuario creado' });
   } catch (error) {
@@ -28,20 +29,19 @@ app.post('/login', async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) return res.json({ message: 'Correo o contraseña incorrecta' });
   try {
-    const user = await UserModel.findOne({ email, password }).lean();
+    const user = await UserModel.findOne({ email }).lean();
     if (!user) return res.status(404).json({ message: 'Ingreso mal el mail o la constraseña' });
+    if (!isValidPassword(user, password))
+      return res.status(400).json({ message: 'credenciales erroneas' });
 
-    console.log(user);
-    if (!req.session.isLog) {
-      req.session.isLog = true;
-      req.session.user = {
-        nombre: user.nombre,
-        apellido: user.apellido,
-        edad: user.edad,
-      };
-    }
+    req.session.isLog = true;
+    req.session.user = {
+      nombre: user.nombre,
+      apellido: user.apellido,
+      edad: user.edad,
+    };
 
-    res.json({ message: 'Usuario logueado' });
+    res.status(200).json({ message: 'Usuario logueado' });
   } catch (e) {
     console.log('error ', e);
     res.status(500).json({ message: 'error al loguearse' });

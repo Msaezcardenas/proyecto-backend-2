@@ -10,6 +10,22 @@ import mongoose from 'mongoose';
 const hbs = create();
 const app = express();
 
+app.use(
+  session({
+    store: MongoStore.create({
+      mongoUrl:
+        'mongodb+srv://molusaezcardenas:tSUzZOhFjzWqQmid@ecommerce.cxnn6t9.mongodb.net/?retryWrites=true&w=majority&appName=Ecommerce',
+      dbName: 'users',
+      ttl: 15,
+    }),
+    secret: 'secrethash',
+    resave: true,
+    saveUninitialized: true,
+    // cookie: { httpOnly: true, secure: true }, // httpOnly en true no va a poder acceder desde el cliente, secure en true solo se puede acceder desde https
+    cookie: { maxAge: 120000 },
+  }),
+);
+
 app.engine('handlebars', hbs.engine);
 app.set('views', __dirname + '/views');
 app.set('view engine', 'handlebars');
@@ -20,22 +36,6 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use('/', ViewsRouter);
 app.use('/api/sessions', SessionRoute);
-
-app.use(
-  session({
-    store: MongoStore.create({
-      mongoUrl:
-        'mongodb+srv://molusaezcardenas:tSUzZOhFjzWqQmid@ecommerce.cxnn6t9.mongodb.net/?retryWrites=true&w=majority&appName=Ecommerce',
-      dbName: 'ecommerce-session',
-      ttl: 15,
-    }),
-    secret: 'secrethash',
-    resave: true,
-    saveUninitialized: true,
-    // cookie: { httpOnly: true, secure: true }, // httpOnly en true no va a poder acceder desde el cliente, secure en true solo se puede acceder desde https
-    cookie: { maxAge: 120000 },
-  }),
-);
 
 mongoose
   .connect(
