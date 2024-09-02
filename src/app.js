@@ -3,12 +3,23 @@ import { create } from 'express-handlebars';
 import session from 'express-session';
 import MongoStore from 'connect-mongo';
 import { __dirname } from './utils.js';
+import ViewsRouter from './routes/views.route.js';
+import SessionRoute from './routes/sessions.route.js';
+import mongoose from 'mongoose';
 
 const hbs = create();
 const app = express();
 
 app.engine('handlebars', hbs.engine);
 app.set('views', __dirname + '/views');
+app.set('view engine', 'handlebars');
+app.use(express.static(__dirname + '/public'));
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+app.use('/', ViewsRouter);
+app.use('/api/sessions', SessionRoute);
 
 app.use(
   session({
@@ -25,6 +36,18 @@ app.use(
     cookie: { maxAge: 120000 },
   }),
 );
+
+mongoose
+  .connect(
+    'mongodb+srv://molusaezcardenas:tSUzZOhFjzWqQmid@ecommerce.cxnn6t9.mongodb.net/?retryWrites=true&w=majority&appName=Ecommerce',
+    { dbName: 'users' },
+  )
+  .then(() => {
+    console.log('BBDD conectada');
+  })
+  .catch(() => {
+    console.log('Error al conectarse a la BBDD');
+  });
 
 app.listen(8080, () => {
   console.log('Corriendo en puerto 8080');
