@@ -6,6 +6,8 @@ import { __dirname } from './utils.js';
 import ViewsRouter from './routes/views.route.js';
 import SessionRoute from './routes/sessions.route.js';
 import mongoose from 'mongoose';
+import passport from 'passport';
+import initPassport from './config/passport.config.js';
 
 const hbs = create();
 const app = express();
@@ -26,6 +28,12 @@ app.use(
   }),
 );
 
+//Passport
+initPassport();
+app.use(passport.initialize());
+app.use(passport.session());
+
+//Handlebars
 app.engine('handlebars', hbs.engine);
 app.set('views', __dirname + '/views');
 app.set('view engine', 'handlebars');
